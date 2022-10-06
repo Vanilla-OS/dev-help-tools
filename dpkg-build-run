@@ -1,0 +1,46 @@
+#!/bin/bash
+# This utility build,install and run the debian package in the current directory.
+
+# Checks
+if [ ! -f debian/control ]; then
+    echo "debian/control not found"
+    exit 1
+fi
+
+if [ ! -x /usr/bin/dpkg-buildpackage ]; then
+    echo "dpkg-buildpackage not found"
+    exit 1
+fi
+
+if [ ! -x /usr/bin/dpkg ]; then
+    echo "dpkg not found"
+    exit 1
+fi
+
+# Vars
+VERSION=$(cat VERSION)
+PACKAGE=$(grep Package debian/control | cut -d' ' -f2)
+ARCH=$(grep Architecture debian/control | cut -d' ' -f2)
+if [ -z "$ARCH" ] || [ "$ARCH" = "any" ]; then
+    ARCH=$(dpkg --print-architecture)
+fi
+
+# Build
+dpkg-buildpackage
+
+# Install vanilla-control-center_0.0.3_amd64.deb
+sudo dpkg -i ../${PACKAGE}_${VERSION}_${ARCH}.deb
+
+# Publish
+if [ "$1" = "--publish" ] && [ -d ../ppa ] && [ ! -z "$EMAIL" ]; then
+    mv ../${PACKAGE}_${VERSION}_${ARCH}.deb ../ppa
+    cd ../ppa
+    sh update.sh
+    cd -
+    exit 0
+else
+    echo "Cannot publish, EMAIL not set or ../ppa not found"
+fi
+
+# Run
+${PACKAGE}
