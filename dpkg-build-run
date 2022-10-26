@@ -17,6 +17,9 @@ if [ ! -x /usr/bin/dpkg ]; then
     exit 1
 fi
 
+# Set system in rw
+sudo almost enter rw
+
 # Vars
 VERSION=$(cat VERSION)
 PACKAGE=$(grep Package debian/control | cut -d' ' -f2)
@@ -31,15 +34,18 @@ dpkg-buildpackage
 # Install vanilla-control-center_0.0.3_amd64.deb
 sudo dpkg -i ../${PACKAGE}_${VERSION}_${ARCH}.deb
 
+# Set system in ro
+sudo almost enter ro
+
 # Publish
-if [ "$1" = "--publish" ] && [ -d ../ppa ] && [ ! -z "$EMAIL" ]; then
-    mv ../${PACKAGE}_${VERSION}_${ARCH}.deb ../ppa
-    cd ../ppa
+if [ "$1" = "--publish" ] && [ -d ../repository/kinetic ] && [ ! -z "$EMAIL" ]; then
+    mv ../${PACKAGE}_${VERSION}_${ARCH}.deb ../repository/kinetic
+    cd ../repository/kinetic
     sh update.sh
     cd -
     exit 0
 else
-    echo "Cannot publish, EMAIL not set or ../ppa not found"
+    echo "Cannot publish, EMAIL not set or ../repository/kinetic not found"
 fi
 
 # Run
