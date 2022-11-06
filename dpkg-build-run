@@ -1,5 +1,5 @@
 #!/bin/bash
-# This utility build,install and run the debian package in the current directory.
+# This utility build the source.changes file and send it to the launchpad server.
 
 # Checks
 if [ ! -f debian/control ]; then
@@ -17,36 +17,12 @@ if [ ! -x /usr/bin/dpkg ]; then
     exit 1
 fi
 
-# Set system in rw
-sudo almost enter rw
-
 # Vars
 VERSION=$(cat VERSION)
 PACKAGE=$(grep Package debian/control | cut -d' ' -f2)
-ARCH=$(grep Architecture debian/control | cut -d' ' -f2)
-if [ -z "$ARCH" ] || [ "$ARCH" = "any" ]; then
-    ARCH=$(dpkg --print-architecture)
-fi
 
 # Build
-dpkg-buildpackage
+debuild -S
 
-# Install vanilla-control-center_0.0.3_amd64.deb
-sudo dpkg -i ../${PACKAGE}_${VERSION}_${ARCH}.deb
-
-# Set system in ro
-sudo almost enter ro
-
-# Publish
-if [ "$1" = "--publish" ] && [ -d ../repository/kinetic ] && [ ! -z "$EMAIL" ]; then
-    mv ../${PACKAGE}_${VERSION}_${ARCH}.deb ../repository/kinetic
-    cd ../repository/kinetic
-    sh update.sh
-    cd -
-    exit 0
-else
-    echo "Cannot publish, EMAIL not set or ../repository/kinetic not found"
-fi
-
-# Run
-${PACKAGE}
+# Send
+dput ppa:vanilla-os/testing ../${PACKAGE}_${VERSION}_source.changes
