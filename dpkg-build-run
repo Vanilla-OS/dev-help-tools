@@ -17,6 +17,12 @@ if [ ! -x /usr/bin/dpkg ]; then
     exit 1
 fi
 
+if [ "$1" == "--repo" ]; then
+    REPO=$2
+else
+    REPO="testing"
+fi
+
 # Vars
 VERSION=$(cat VERSION)
 PACKAGE=$(grep Package debian/control | cut -d' ' -f2)
@@ -25,4 +31,4 @@ PACKAGE=$(grep Package debian/control | cut -d' ' -f2)
 debuild -S
 
 # Send
-dput ppa:vanilla-os/testing ../${PACKAGE}_${VERSION}_source.changes
+dput ppa:vanilla-os/${REPO} ../${PACKAGE}_${VERSION}_source.changes
