@@ -24,7 +24,11 @@ else
 fi
 
 # Vars
-VERSION=$(cat VERSION)
+if [ -f VERSION ]; then
+    VERSION=$(cat VERSION)
+else
+    VERSION=$(grep Version debian/control | cut -d' ' -f2)
+fi
 PACKAGE=$(grep Package debian/control | cut -d' ' -f2)
 
 # Build
